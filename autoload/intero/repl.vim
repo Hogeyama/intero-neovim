@@ -67,6 +67,25 @@ function! intero#repl#type(generic) abort
     call intero#repl#type_at(a:generic, l:l, l:c, l:l, l:c)
 endfunction
 
+function! intero#repl#complete() abort
+    let l:module = intero#loc#detect_module()
+    let l:c = col ('.') - 1
+    let l:l = line('.')
+    let l:id = getline(l:l)
+    let l:id = strpart(l:id, 0, l:c)
+    let l:id = matchstr(l:id, "[a-zA-Z0-9_'.]*$")
+    call intero#process#add_handler(function('intero#repl#complete_handler'))
+    call intero#repl#send(
+        \ join([':complete-at',
+        \ l:module,
+        \ l:l, l:c,
+        \ l:l, l:c,
+        \ l:id], ' '))
+endfunction
+function! intero#repl#complete_handler(response) abort
+    let g:intero_complete_result = a:response
+endfunction
+
 " Gets the type at the given location, specified by:
 "
 " * `l1`: start line
